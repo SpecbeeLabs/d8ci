@@ -4,6 +4,7 @@ FROM php:7.1-apache-stretch
 RUN apt-get update \
   && apt-get install -y \
   openssh-client \
+  git \
   wget \
   gnupg \
   libjpeg-dev \
