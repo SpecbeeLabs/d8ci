@@ -31,6 +31,11 @@ RUN curl -sS https://getcomposer.org/installer | php \
 # Put a turbo on composer.
 RUN composer global require hirak/prestissimo
 
+# Install PHPCS.
+RUN composer global require drupal/coder:^8.2.12
+RUN composer global require dealerdirect/phpcodesniffer-composer-installer
+
+
 # Change working directory to webroot
 WORKDIR /var/www/html
 
