@@ -32,8 +32,12 @@ RUN curl -sS https://getcomposer.org/installer | php \
 RUN composer global require hirak/prestissimo
 
 # Install PHPCS.
-RUN composer global require drupal/coder:^8.2.12
+RUN composer global require drupal/coder --update-no-dev --no-suggest --prefer-dist ^8.2
 RUN composer global require dealerdirect/phpcodesniffer-composer-installer
+RUN ln -s /root/.composer/vendor/bin/phpcs /usr/bin/phpcs
+# Set Drupal as default CodeSniffer Standard
+RUN phpcs --config-set installed_paths /root/.composer/vendor/drupal/coder/coder_sniffer/ \
+  && phpcs --config-set default_standard Drupal
 
 
 # Change working directory to webroot
