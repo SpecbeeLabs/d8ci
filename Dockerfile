@@ -9,7 +9,10 @@ RUN apt-get update \
   gnupg \
   libjpeg-dev \
   libpng-dev \
-  && docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr \
+  libsqlite3-dev \
+  sqlite3 \
+  && docker-php-ext-configure \ 
+    gd --with-png-dir=/usr --with-jpeg-dir=/usr \
   && docker-php-ext-install \
     gd \
     mbstring \
