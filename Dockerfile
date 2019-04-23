@@ -11,7 +11,7 @@ RUN apt-get update \
   libpng-dev \
   libsqlite3-dev \
   sqlite3 \
-  && docker-php-ext-configure \ 
+  && docker-php-ext-configure \
     gd --with-png-dir=/usr --with-jpeg-dir=/usr \
   && docker-php-ext-install \
     gd \
@@ -42,6 +42,16 @@ RUN ln -s /root/.composer/vendor/bin/phpcs /usr/bin/phpcs
 RUN phpcs --config-set installed_paths /root/.composer/vendor/drupal/coder/coder_sniffer/ \
   && phpcs --config-set default_standard Drupal
 
+# Install SASS linter.
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
+  apt-get install -y build-essential nodejs && \
+  npm i -g eslint && \
+  npm i -g yarn && \
+  npm i -g stylelint && \
+  npm i -g stylelint-checkstyle-formatter && \
+  npm i -g stylelint-config-standard && \
+  npm i -g stylelint-no-browser-hacks && \
+  npm i -g stylelint-scss
 
 # Change working directory to webroot
 WORKDIR /var/www/html
