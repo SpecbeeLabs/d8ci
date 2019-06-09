@@ -11,6 +11,7 @@ RUN apt-get update \
   libpng-dev \
   libsqlite3-dev \
   sqlite3 \
+  zip \
   && docker-php-ext-configure \
     gd --with-png-dir=/usr --with-jpeg-dir=/usr \
   && docker-php-ext-install \
@@ -41,6 +42,11 @@ RUN ln -s /root/.composer/vendor/bin/phpcs /usr/bin/phpcs
 # Set Drupal as default CodeSniffer Standard
 RUN phpcs --config-set installed_paths /root/.composer/vendor/drupal/coder/coder_sniffer/ \
   && phpcs --config-set default_standard Drupal
+
+# Install Drupal check for deprecated codes.
+RUN curl -O -L https://github.com/mglaman/drupal-check/releases/latest/download/drupal-check.phar \
+&& mv drupal-check.phar /usr/local/bin/drupal-check \
+&& chmod +x /usr/local/bin/drupal-check
 
 # Install SASS linter.
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
