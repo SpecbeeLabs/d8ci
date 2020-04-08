@@ -1,23 +1,26 @@
-FROM php:7.1-apache-stretch
+FROM php:7.2-apache-stretch
 
 # Common
-RUN apt-get update \
-  && apt-get install -y \
+RUN apt-get update && apt-get install -y \
   openssh-client \
   git \
-  wget \
   gnupg \
+  imagemagick \
   libjpeg-dev \
   libpng-dev \
-  libsqlite3-dev \
-  sqlite3 \
-  zip \
+  libmagickwand-dev --no-install-recommends \
+  mysql-client \
+  wget \
+  unzip \
   && docker-php-ext-configure \
     gd --with-png-dir=/usr --with-jpeg-dir=/usr \
   && docker-php-ext-install \
     gd \
     mbstring \
+    mysqli \
     opcache \
+    pdo \
+    pdo_mysql \
     zip
 
 # Remove the memory limit for the CLI only.
@@ -35,29 +38,27 @@ RUN curl -sS https://getcomposer.org/installer | php \
 # Put a turbo on composer.
 RUN composer global require hirak/prestissimo
 
-# Install PHPCS.
-RUN composer global require drupal/coder --update-no-dev --no-suggest --prefer-dist ^8.2
-RUN composer global require dealerdirect/phpcodesniffer-composer-installer
-RUN ln -s /root/.composer/vendor/bin/phpcs /usr/bin/phpcs
-# Set Drupal as default CodeSniffer Standard
-RUN phpcs --config-set installed_paths /root/.composer/vendor/drupal/coder/coder_sniffer/ \
-  && phpcs --config-set default_standard Drupal
+# Change docroot since we use Composer Drupal project.
+RUN sed -ri -e 's!/var/www/html!/var/www/html/docroot!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www!/var/www/html/docroot!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Install Drupal check for deprecated codes.
-RUN curl -O -L https://github.com/mglaman/drupal-check/releases/latest/download/drupal-check.phar \
-&& mv drupal-check.phar /usr/local/bin/drupal-check \
-&& chmod +x /usr/local/bin/drupal-check
+# Install Robo CI.
+RUN wget https://robo.li/robo.phar
+RUN chmod +x robo.phar && mv robo.phar /usr/local/bin/robo
 
-# Install SASS linter.
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
-  apt-get install -y build-essential nodejs && \
-  npm i -g eslint && \
-  npm i -g yarn && \
-  npm i -g stylelint && \
-  npm i -g stylelint-checkstyle-formatter && \
-  npm i -g stylelint-config-standard && \
-  npm i -g stylelint-no-browser-hacks && \
-  npm i -g stylelint-scss
+# Install Dockerize.
+ENV DOCKERIZE_VERSION v0.6.0
+RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+
+# Install ImageMagic to take screenshots.
+RUN pecl install imagick \
+    && docker-php-ext-enable imagick
+
+# Install Chrome browser.
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+RUN dpkg -i google-chrome-stable_current_amd64.deb; apt-get -fy install
 
 # Change working directory to webroot
 WORKDIR /var/www/html
